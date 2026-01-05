@@ -1,0 +1,298 @@
+
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          /* Base reset */
+          * { box-sizing: border-box; }
+          /* User CSS */
+          
+        </style>
+        <script>
+            // Capture console.log to display in parent (Optional future enhancement, currently just preventing errors)
+            window.onerror = function(message, source, lineno, colno, error) {
+                console.error('Preview Error:', message);
+            };
+        </script>
+      </head>
+      <body>
+        <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Fraud Detection Quiz</title>
+    <style>
+        /* --- THEME RETAINED --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh; background: linear-gradient(-45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+            background-size: 400% 400%; animation: gradientShift 15s ease infinite; color: #333;
+            overflow-x: hidden; padding: 15px; line-height: 1.6;
+        }
+        @keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        
+        .container { max-width: 750px; margin: 0 auto; min-height: 100vh; }
+        
+        .header { text-align: center; color: white; padding: 25px 0; margin-bottom: 25px; }
+        .header h1 { font-size: clamp(1.8em, 5vw, 2.8em); text-shadow: 3px 3px 6px rgba(0,0,0,0.4); margin-bottom: 10px; }
+        
+        .timer-container {
+            background: rgba(0, 0, 0, 0.2); color: white; padding: 10px 20px;
+            border-radius: 50px; display: inline-block; margin-bottom: 20px;
+            font-weight: bold; font-size: 1.2em; border: 2px solid rgba(255,255,255,0.4);
+        }
+        .timer-warning { color: #ff6b6b; background: white; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.7; } }
+
+        .question-container { 
+            background: rgba(255,255,255,0.97); border-radius: 25px; padding: 40px 35px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3); margin-bottom: 30px;
+        }
+        
+        .question-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding: 18px 25px; background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            color: white; border-radius: 18px;
+        }
+        
+        .question-number { font-size: 1.1em; font-weight: bold; background: rgba(255,255,255,0.25); padding: 5px 15px; border-radius: 20px; }
+        
+        .question-text { 
+            font-size: clamp(1.2em, 4vw, 1.5em); font-weight: 600; color: #2c3e50; 
+            margin-bottom: 30px; line-height: 1.4; 
+        }
+        
+        .options { display: flex; flex-direction: column; gap: 15px; }
+        
+        .option { 
+            padding: 20px 25px; border: 3px solid transparent; border-radius: 20px;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef); cursor: pointer;
+            transition: all 0.2s ease; font-size: 1.1em; font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .option:hover { transform: translateY(-3px); border-color: #4ecdc4; }
+        .option.correct-choice { background: linear-gradient(135deg, #28a745, #20c997) !important; color: white; }
+        .option.wrong-choice { background: linear-gradient(135deg, #dc3545, #ff6b6b) !important; color: white; }
+        
+        .feedback { 
+            margin-top: 25px; padding: 25px; border-radius: 20px; font-size: 1em;
+            line-height: 1.6; box-shadow: 0 15px 40px rgba(0,0,0,0.15); border-left: 6px solid;
+        }
+        .feedback.correct { background: #d4edda; color: #155724; border-left-color: #28a745; }
+        .feedback.incorrect { background: #f8d7da; color: #721c24; border-left-color: #dc3545; }
+
+        .btn { 
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1); color: white; border: none;
+            padding: 20px; font-size: 1.2em; font-weight: 700; border-radius: 50px;
+            cursor: pointer; transition: all 0.2s ease; width: 100%; margin-top: 20px;
+        }
+        .btn:disabled { background: #6c757d; cursor: not-allowed; opacity: 0.6; }
+
+        .score { font-size: 4em; font-weight: 900; margin: 10px 0; color: #4ecdc4; text-align: center;}
+        .congrats-message { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px; border-radius: 25px; margin: 20px 0; text-align: center; font-size: 1.1em; }
+        .golden-rule { background: linear-gradient(135deg, #ffc107, #fd7e14); color: #212529; padding: 25px; border-radius: 20px; font-weight: 700; margin: 20px 0; text-align: center; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🛡️ Fraud Detection Quiz</h1>
+        <center>
+            <div id="timerDisplay" class="timer-container hidden">Time Left: 03:00</div>
+        </center>
+    </div>
+    <div id="quizArea" class="question-container"></div>
+    <div id="resultArea" class="question-container hidden"></div>
+</div>
+
+<script>
+    const quizData = {
+        set1: [
+            {q:"WhatsApp from 'Bank Support' at 2:47 AM: Account suspended. Click link in 30min.",o:["Click link","Call number","Check official app","Share OTP"],c:2,e_correct:"✅ CORRECT: Banks never use WhatsApp for urgent links.",e_wrong:"❌ WRONG: Urgent links steal credentials.",why_correct:"Official apps are the only safe channel.",why_wrong:"Scammers use urgency to panic you."},
+            {q:"'Police' Video Call: Your ID is linked to money laundering. Pay ₹3L 'bail' via UPI.",o:["Pay now","Visit local station","Send KYC","Click portal"],c:1,e_correct:"✅ CORRECT: Real police never arrest via video call.",e_wrong:"❌ WRONG: Digital Arrest is a total fabrication.",why_correct:"Agencies require physical presence for arrests.",why_wrong:"Once you pay via UPI, the money is gone forever."},
+            {q:"SMS: 'PhonePe refund failed'. Reply YES to auto-refund to your bank.",o:["Reply YES","Check in-app","Share PIN","Call sender"],c:1,e_correct:"✅ CORRECT: Refunds never require an SMS reply.",e_wrong:"❌ WRONG: YES replies confirm you are a live target.",why_correct:"Apps process refunds automatically.",why_wrong:"Fraudsters use SMS to bypass app security."},
+            {q:"'Quantum Wealth': 5% DAILY returns guaranteed. ₹10K becomes ₹50K in 10 days.",o:["Invest small","It's a Ponzi","Ask friends","Try ₹5K"],c:1,e_correct:"✅ CORRECT: No legit business can guarantee 5% daily.",e_wrong:"❌ WRONG: High guaranteed returns are classic traps.",why_correct:"If it's too good to be true, it is a scam.",why_wrong:"They pay early profit to lure bigger money."},
+            {q:"'Cousin' calls crying: Stuck at airport, needs ₹25K UPI for flight in 10 mins.",o:["Send money","Verify contact","Ask details","Call airport"],c:1,e_correct:"✅ CORRECT: AI voice clones can mimic anyone perfectly.",e_wrong:"❌ WRONG: Never send money based on a voice alone.",why_correct:"Always call them back on their saved number.",why_wrong:"Urgency is used to stop you from thinking."},
+            {q:"Delivery agent: 'Wrong OTP entered, give me your correct OTP to finish delivery'.",o:["Share OTP","Check app/Wait","Give old OTP","Call office"],c:1,e_correct:"✅ CORRECT: You never need an OTP to RECEIVE a parcel.",e_wrong:"❌ WRONG: OTPs are for logins, not delivery proof.",why_correct:"OTP sharing gives them account access.",why_wrong:"Delivery scammers steal your Amazon/Flipkart login."},
+            {q:"Telegram: 'IPL Fixed Matches VIP' channel. 100% winners for ₹500 fee.",o:["Join VIP","Report/Block","Try once","Ask proof"],c:1,e_correct:"✅ CORRECT: Match fixing info is not sold on Telegram.",e_wrong:"❌ WRONG: These channels are purely for stealing fees.",why_correct:"Reporting stops others from being trapped.",why_wrong:"They block you immediately after you pay."},
+            {q:"IRCTC SMS: 'PNR cancelled'. Click rebook link: irctc-rebook-now.co.in.",o:["Click link","Check official site","Call SMS","Reply HELP"],c:1,e_correct:"✅ CORRECT: IRCTC never sends clickable links via SMS.",e_wrong:"❌ WRONG: Fake URLs steal your bank data.",why_correct:"Manual login on irctc.co.in is the only way.",why_wrong:"Fake domains look real but are typosquatted."},
+            {q:"Instagram DM: Verified celeb says they need a 5min review for ₹1L payment.",o:["Do review","Block/Scam","Send email","Ask for ID"],c:1,e_correct:"✅ CORRECT: Celebs don't DM random people for jobs.",e_wrong:"❌ WRONG: Celeb accounts are often compromised.",why_correct:"Official promos go through agencies.",why_wrong:"They want your login details or a 'file fee'."},
+            {q:"SMS: 'Link Aadhaar within 24hrs or account frozen'. Link provided.",o:["Urgent - click","UIDAI doesn't link","Use bank app","Ignore"],c:2,e_correct:"✅ CORRECT: Use your bank's official app only.",e_wrong:"❌ WRONG: UIDAI never sends clickable links for banks.",why_correct:"Bank apps provide secure encrypted tunnels.",why_wrong:"Identity theft starts with fake Aadhaar links."}
+        ],
+        set2: [
+            {q:"OLX Buyer: 'I want your sofa. Sending QR to pay you advance.' Scan it?",o:["Scan to get","QR pays only","Ask bank","Check QR"],c:1,e_correct:"✅ CORRECT: Scanning a QR always DEDUCTS money.",e_wrong:"❌ WRONG: QR codes never 'receive' money.",why_correct:"RBI Rule: No PIN/QR needed to receive.",why_wrong:"Scammers lie and say you must 'confirm' the pay."},
+            {q:"Facebook Ad: 'Earn ₹5000/day liking YouTube videos'. Easy work?",o:["Start today","Task Scam","Apply now","Pay fee"],c:1,e_correct:"✅ CORRECT: High pay for low work is a 'Task Scam'.",e_wrong:"❌ WRONG: These lead to 'investment' traps.",why_correct:"No real company pays ₹100 per 'Like'.",why_wrong:"They pay small amounts early to build trust."},
+            {q:"Electricity SMS: 'Power cut at 9PM due to non-update. Call 9xxxxxx.'?",o:["Call now","Pay link","Check official app","Call 100"],c:2,e_correct:"✅ CORRECT: Official boards never use private numbers.",e_wrong:"❌ WRONG: Calling leads to a remote access trap.",why_correct:"Use the official DISCOM portal/app only.",why_wrong:"They will ask you to install AnyDesk/TeamViewer."},
+            {q:"KYC: 'Your YONO SBI KYC expired. Login here to update'. Link included.",o:["Click link","Visit SBI","Send SMS","Share ID"],c:1,e_correct:"✅ CORRECT: Banks never put login links in SMS.",e_wrong:"❌ WRONG: Phishing links capture your credentials.",why_correct:"The official SBI app is the only safe place.",why_wrong:"Fake pages look 100% identical to the real bank."},
+            {q:"Google Search: You find a 'Swiggy Support' number. They ask for 'Refund App'.",o:["Install it","Safe fix","Scam - block","Share order"],c:2,e_correct:"✅ CORRECT: Google search 'customer care' is often fake.",e_wrong:"❌ WRONG: Refund apps are actually remote-control apps.",why_correct:"Use only in-app support chat systems.",why_wrong:"Scammers pay for Ads to appear first in search."},
+            {q:"Gift: 'You won an iPhone 15. Pay ₹499 shipping fee now.'?",o:["Pay shipping","Great deal","It's a trap","Ask COD"],c:2,e_correct:"✅ CORRECT: They want your card CVV, not ₹499.",e_wrong:"❌ WRONG: 'Free' items that cost money are scams.",why_correct:"A ₹1.5L phone won't be sent for ₹500.",why_wrong:"The payment page logs your credit card info."},
+            {q:"Remote Support: 'Fix your phone' by downloading 'AnyDesk'. Do it?",o:["Fix it","Only for banks","Scam - block","Share ID"],c:2,e_correct:"✅ CORRECT: AnyDesk gives them full phone control.",e_wrong:"❌ WRONG: They can see your OTPs live.",why_correct:"Never share your screen with strangers.",why_wrong:"Once connected, they can open your bank apps."},
+            {q:"Airport Wi-Fi: You do a ₹50,000 transfer on the public network. Safe?",o:["Yes, it's fast","Use VPN","Unsafe/Avoid","Safe for apps"],c:2,e_correct:"✅ CORRECT: Public Wi-Fi is easy to intercept.",e_wrong:"❌ WRONG: Hackers use 'Sniffing' on public networks.",why_correct:"Always use mobile data for banking.",why_wrong:"Public networks are often unencrypted."},
+            {q:"WhatsApp: 'KBC Lottery win of ₹25 Lakh. Call Rana Pratap Singh'.",o:["Call now","Send tax","Block Scam","Ask proof"],c:2,e_correct:"✅ CORRECT: KBC never calls on WhatsApp.",e_wrong:"❌ WRONG: You can't win a lottery you didn't enter.",why_correct:"They ask for 'Taxes' and then disappear.",why_wrong:"The audio/video used is usually old/stolen."},
+            {q:"Phone signal dead. 1 hour later, bank says ₹1L transferred. What is this?",o:["Network bug","Sim Swap","Bank error","Phone hack"],c:1,e_correct:"✅ CORRECT: They cloned your SIM to get OTPs.",e_wrong:"❌ WRONG: A dead signal + bank SMS is a Sim Swap.",why_correct:"Alert your bank and operator immediately.",why_wrong:"They deactivate your SIM so you can't see OTPs."}
+        ],
+        set3: [
+            {q:"Matrimonial: Online match sends 'gift' from UK, stuck at customs. Pay ₹50K fee?",o:["Pay fee","Ask receipt","Romance Scam","Call DHL"],c:2,e_correct:"✅ CORRECT: Scammers build fake relationships to steal cash.",e_wrong:"❌ WRONG: Customs doesn't collect cash via UPI.",why_correct:"Real people won't ask for money early.",why_wrong:"The 'gift' is a bait for the shipping trap."},
+            {q:"Task Scam: They pay ₹150 for 1 review, then ask for ₹5000 'VIP deposit'.",o:["Invest now","Ponzi Scam","Ask task","Try ₹1K"],c:1,e_correct:"✅ CORRECT: Payouts are small bait for a large trap.",e_wrong:"❌ WRONG: You will never get the deposit back.",why_correct:"Real jobs never ask you to pay to work.",why_wrong:"The app will freeze once you 'invest' big."},
+            {q:"WhatsApp PDF: 'Income_Tax_Refund.apk'. Open it to see your refund?",o:["Open PDF","It's Malware","Safe file","Check size"],c:1,e_correct:"✅ CORRECT: .apk files are Android apps, not documents.",e_wrong:"❌ WRONG: This app steals your SMS/Bank data.",why_correct:"Govt never sends apps via WhatsApp.",why_wrong:"The 'PDF' icon is just a fake image cover."},
+            {q:"Phone Call: Agent asks for 'Screen Share' to fix a minor technical bug.",o:["Fix it","Safe fix","Scam - block","Share ID"],c:2,e_correct:"✅ CORRECT: Screen sharing exposes your PINs/OTPs.",e_wrong:"❌ WRONG: Screen sharing is the #1 way money is stolen.",why_correct:"Official agents use their own tools, not yours.",why_wrong:"They record your screen while you type passwords."},
+            {q:"Insurance: 'LIC Bonus ₹5L is ready. Pay ₹10K processing fee to claim.'",o:["Pay & get","Call agent","Scam - ignore","Check site"],c:2,e_correct:"✅ CORRECT: Insurance bonuses are never paid for in advance.",e_wrong:"❌ WRONG: LIC never uses UPI for fee collections.",why_correct:"Bonus is credited directly, never 'requested'.",why_wrong:"Fake agents use your policy info to sound real."},
+            {q:"Meta SMS: 'Get Blue Tick for ₹500. Click here to verify account'.",o:["Cheap Deal","Official Meta","Phishing Trap","Pay UPI"],c:2,e_correct:"✅ CORRECT: Blue ticks are sold only via the official Meta app.",e_wrong:"❌ WRONG: This link steals your Instagram login.",why_correct:"Verified badges cost monthly, not a one-time fee.",why_wrong:"They will lock you out once you click."},
+            {q:"Loan App: 'Instant ₹5L loan - No Documents. Download LoanFast.'",o:["Take it","Check Rate","Blackmail App","Use Bank"],c:2,e_correct:"✅ CORRECT: Illegal loan apps steal your contact list.",e_wrong:"❌ WRONG: They use your photos for blackmail later.",why_correct:"Use only RBI-regulated NBFC apps.",why_wrong:"They charge 200% interest and harass you."},
+            {q:"Deepfake: Your Boss video calls asking for an 'urgent Amazon Gift Card'.",o:["Buy card","Verify Slack","Call Boss","Wait 1hr"],c:2,e_correct:"✅ CORRECT: AI Deepfakes can mimic faces/voices live.",e_wrong:"❌ WRONG: Gift cards are the favorite currency of thieves.",why_correct:"Call them back on a different line to verify.",why_wrong:"Once you share the code, the money is gone."},
+            {q:"Real Estate: 'Premium Flat - 50% discount. Pay 1% token to book visit.'",o:["Book now","Token risk","Check RERA","Pay Credit"],c:2,e_correct:"✅ CORRECT: Never pay a token before seeing a house.",e_wrong:"❌ WRONG: Scammers use photos of other people's homes.",why_correct:"Check the RERA registration number first.",why_wrong:"The 'Owner' will vanish after the UPI transfer."},
+            {q:"NCB/FedEx: 'Your parcel has drugs. Avoid jail by paying ₹2L fine.'",o:["Pay & save","Official way","Fear Scam","Call Lawyer"],c:2,e_correct:"✅ CORRECT: Agencies don't settle drug cases via UPI.",e_wrong:"❌ WRONG: This is the 'Digital Arrest' fear tactic.",why_correct:"Hang up and call the official Cyber Cell.",why_wrong:"They keep you on the call to keep you panicked."}
+        ]
+    };
+
+    let currentSet = "";
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let timeLeft = 180;
+    let timerId = null;
+    let currentOptions = [];
+
+    function shuffleOptions(questionObj) {
+        let options = questionObj.o.map((text, index) => ({ text, isCorrect: index === questionObj.c }));
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+        }
+        return options;
+    }
+
+    function startRandomSet() {
+        const sets = Object.keys(quizData);
+        currentSet = sets[Math.floor(Math.random() * sets.length)];
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('resultArea').classList.add('hidden');
+        document.getElementById('quizArea').classList.remove('hidden');
+        startTimer();
+        loadQuestion();
+    }
+
+    function startTimer() {
+        clearInterval(timerId);
+        timeLeft = 180;
+        const display = document.getElementById('timerDisplay');
+        display.classList.remove('hidden');
+        timerId = setInterval(() => {
+            timeLeft--;
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            display.textContent = `Time Left: ${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (timeLeft <= 30) display.classList.add('timer-warning');
+            else display.classList.remove('timer-warning');
+            if (timeLeft <= 0) { clearInterval(timerId); showResults("TIME EXPIRED!"); }
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        const questions = quizData[currentSet];
+        if (currentQuestion >= questions.length) {
+            clearInterval(timerId);
+            return showResults();
+        }
+        const q = questions[currentQuestion];
+        currentOptions = shuffleOptions(q);
+
+        document.getElementById('quizArea').innerHTML = `
+            <div class="question-header">
+                <div class="question-number">Question ${currentQuestion + 1}/10</div>
+            </div>
+            <div class="question-text">${q.q.replace(/\n/g, '<br>')}</div>
+            <div class="options" id="options"></div>
+            <div id="feedback" class="feedback hidden"></div>
+            <button class="btn" id="nextBtn" disabled>👆 Select Answer</button>
+        `;
+
+        const optionsContainer = document.getElementById('options');
+        currentOptions.forEach((opt, index) => {
+            const div = document.createElement('div');
+            div.className = 'option';
+            div.innerHTML = `<strong>${String.fromCharCode(65 + index)}.</strong> ${opt.text}`;
+            div.onclick = () => handleAnswer(index, q);
+            optionsContainer.appendChild(div);
+        });
+        answered = false;
+    }
+
+    function handleAnswer(selectedIndex, q) {
+        if (answered) return;
+        answered = true;
+        const domOptions = document.querySelectorAll('.option');
+        const selectedOpt = currentOptions[selectedIndex];
+
+        domOptions.forEach((div, idx) => {
+            if (currentOptions[idx].isCorrect) div.classList.add('correct-choice');
+            else if (idx === selectedIndex) div.classList.add('wrong-choice');
+        });
+
+        const feedback = document.getElementById('feedback');
+        if (selectedOpt.isCorrect) {
+            score++;
+            feedback.innerHTML = `<strong>${q.e_correct}</strong><br>${q.why_correct}`;
+            feedback.className = 'feedback correct';
+        } else {
+            feedback.innerHTML = `<strong>${q.e_wrong}</strong><br>${q.why_wrong}`;
+            feedback.className = 'feedback incorrect';
+        }
+        feedback.classList.remove('hidden');
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'NEXT QUESTION ⚡';
+        nextBtn.onclick = () => { currentQuestion++; loadQuestion(); };
+    }
+
+    function showResults(reason = "") {
+        document.getElementById('timerDisplay').classList.add('hidden');
+        document.getElementById('quizArea').classList.add('hidden');
+        const res = document.getElementById('resultArea');
+        res.classList.remove('hidden');
+        res.innerHTML = `
+            ${reason ? '<h2 style="color:#dc3545; text-align:center;">'+reason+'</h2>' : ''}
+            <div class="score">${score}/10</div>
+            <div class="congrats-message">
+                Congratulations! You have successfully completed the fraud detection test. Remember- If something feels urgent or too good to be true, it is usually a scam
+            </div>
+            <div class="golden-rule">
+                💎 THE GOLDEN RULE:<br>
+                Never scan a QR code to "receive" money, never share your screen with a stranger, and never believe a "Digital Arrest" threat over video call.
+            </div>
+            <button class="btn" onclick="startRandomSet()">🚀 Try Next Random Quiz</button>
+        `;
+    }
+
+    function init() {
+        document.getElementById('quizArea').innerHTML = `
+            <div style="text-align:center;">
+                <p style="font-size:1.2em; margin-bottom:20px;">3 Sets. 30 Challenges. 3 Minutes. Are you fraud-proof?</p>
+                <button class="btn" onclick="startRandomSet()">🚀 Start Quiz</button>
+            </div>
+        `;
+    }
+    init();
+</script>
+</body>
+</html>
+        <script>
+          try {
+            
+          } catch (err) {
+            console.error('Runtime Error:', err);
+            document.body.innerHTML += '<div style="color:red; background:#ffe6e6; padding:10px; margin-top:20px; border-radius:4px; border:1px solid red;"><strong>Runtime Error:</strong> ' + err.message + '</div>';
+          }
+        </script>
+      </body>
+    </html>
+  
